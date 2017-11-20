@@ -35,5 +35,3 @@ copy_exec /opt/tpmdisk/startauthsession
 copy_exec /opt/tpmdisk/unseal
 copy_exec /opt/tpmdisk/unseal-disk-key.sh
 copy_exec /opt/tpmdisk/unseal-from-pcrs.sh
-copy_file tpmdisk /opt/tpmdisk/sealedkey_priv.bin
-copy_file tpmdisk /opt/tpmdisk/sealedkey_pub.bin
