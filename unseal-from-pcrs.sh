@@ -3,8 +3,8 @@
 # args are: priv pub output
 
 # KEEP IN SYNC!
-PCRS="0 2 4 7 8 9 12 14"
-PCR_BITS="5395"
+PCRS="0 2 4 9 11 12 14"
+PCR_BITS="5A15"
 TOOLSDIR="/opt/tpmdisk"
 
 tmpdir=$(mktemp -d)
