@@ -24,7 +24,7 @@ cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
 "$TOOLSDIR/policymaker" -halg sha1 -if "$tmpdir/pcr-policy.txt" -of "$tmpdir/pcr-policy.bin"
 
 # Seal the actual file
-"$TOOLSDIR/create" -halg sha1 -nalg sha1 -hp 81000001 -bl -kt p -kt f -pol "$tmpdir/pcr-policy.bin" -if "$tmpdir/newkey.bin" -opr "/boot/sealedkey_priv.bin" -opu "/boot/sealedkey_pub.bin"
+"$TOOLSDIR/create" -halg sha1 -nalg sha1 -hp 81000001 -bl -kt p -kt f -pol "$tmpdir/pcr-policy.bin" -if "$tmpdir/newkey.bin" -opr "/bk/sealedkey_priv.bin" -opu "/bk/sealedkey_pub.bin"
 
 # Add the key to LUKS
 echo "Adding key..."

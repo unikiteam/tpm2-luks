@@ -16,7 +16,7 @@ cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
 
 # Seal the new key to the TPM
 echo "Sealing key to TPM..."
-"$TOOLSDIR/seal-to-pcrs.sh" "$tmpdir/newkey.bin" "/boot/sealedkey_priv.bin" "/boot/sealedkey_pub.bin"
+"$TOOLSDIR/seal-to-pcrs.sh" "$tmpdir/newkey.bin" "/bk/sealedkey_priv.bin" "/bk/sealedkey_pub.bin"
 
 # Add the key to LUKS
 echo "Adding key..."
