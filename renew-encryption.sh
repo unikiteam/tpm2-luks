@@ -11,20 +11,41 @@ tmpdir=$(mktemp -d)
 umask 0077
 
 # Make a new key
-dd if=/dev/urandom of="$tmpdir/newkey.bin" bs=1 count=32
-
-# Kill the existing key
-echo "Removing old key..."
-cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
+dd if=/dev/urandom bs=1 count=32 | base64 | tr -d '\n' > "$tmpdir/newkey.bin"
 
 # Make text policy file
 "$TOOLSDIR/policymakerpcr" -halg sha1 -bm $PCR_BITS -if "$PCR_FILE" -of "$tmpdir/pcr-policy.txt"
 
+if [ $? -gt 0 ]
+then
+    >&2 echo "Make PCR policy failed!"
+    rm -rf "$tmpdir"
+    exit 1
+fi
+
 # Make binary policy file
 "$TOOLSDIR/policymaker" -halg sha1 -if "$tmpdir/pcr-policy.txt" -of "$tmpdir/pcr-policy.bin"
 
+if [ $? -gt 0 ]
+then
+    >&2 echo "Policy maker failed!"
+    rm -rf "$tmpdir"
+    exit 1
+fi
+
 # Seal the actual file
 "$TOOLSDIR/create" -halg sha1 -nalg sha1 -hp 81000001 -bl -kt p -kt f -pol "$tmpdir/pcr-policy.bin" -if "$tmpdir/newkey.bin" -opr "/bk/sealedkey_priv.bin" -opu "/bk/sealedkey_pub.bin"
+
+if [ $? -gt 0 ]
+then
+    >&2 echo "Seal to TPM failed!"
+    rm -rf "$tmpdir"
+    exit 1
+fi
+
+# Kill the existing key
+echo "Removing old key..."
+cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
 
 # Add the key to LUKS
 echo "Adding key..."

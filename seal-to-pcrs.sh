@@ -18,11 +18,32 @@ done
 # Make text policy file
 "$TOOLSDIR/policymakerpcr" -halg sha1 -bm $PCR_BITS -if "$tmpdir/pcrs.txt" -of "$tmpdir/pcr-policy.txt"
 
+if [ $? -gt 0 ]
+then
+    >&2 echo "Make PCR policy failed!"
+    rm -rf "$tmpdir"
+    exit 1
+fi
+
 # Make binary policy file
 "$TOOLSDIR/policymaker" -halg sha1 -if "$tmpdir/pcr-policy.txt" -of "$tmpdir/pcr-policy.bin"
 
+if [ $? -gt 0 ]
+then
+    >&2 echo "Policy maker failed!"
+    rm -rf "$tmpdir"
+    exit 1
+fi
+
 # Seal the actual file
 "$TOOLSDIR/create" -halg sha1 -nalg sha1 -hp 81000001 -bl -kt p -kt f -pol "$tmpdir/pcr-policy.bin" -if "$1" -opr "$2" -opu "$3"
+
+if [ $? -gt 0 ]
+then
+    >&2 echo "Seal to TPM failed!"
+    rm -rf "$tmpdir"
+    exit 1
+fi
 
 # Clean up
 rm -rf "$tmpdir"

@@ -8,19 +8,27 @@ tmpdir=$(mktemp -d)
 umask 0077
 
 # Make a new key
-dd if=/dev/urandom of="$tmpdir/newkey.bin" bs=1 count=32
-
-# Kill the existing key
-echo "Removing old key..."
-cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
+dd if=/dev/urandom bs=1 count=32 | base64 | tr -d '\n' > "$tmpdir/newkey.bin"
 
 # Seal the new key to the TPM
 echo "Sealing key to TPM..."
 "$TOOLSDIR/seal-to-pcrs.sh" "$tmpdir/newkey.bin" "/bk/sealedkey_priv.bin" "/bk/sealedkey_pub.bin"
 
-# Add the key to LUKS
-echo "Adding key..."
-cryptsetup luksAddKey "$DISK" -S "$TPM_SLOT" -d /keys/rootkey.bin "$tmpdir/newkey.bin"
+if [ $? -ne 0 ]
+then
+    # Clean up
+    rm -rf "$tmpdir"
+    exit $?
+else
+    # Kill the existing key
+    echo "Removing old key..."
+    cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
 
-# Clean up
-rm -rf "$tmpdir"
+    # Add the key to LUKS
+    echo "Adding key..."
+    cryptsetup luksAddKey "$DISK" -S "$TPM_SLOT" -d /keys/rootkey.bin "$tmpdir/newkey.bin"
+
+    # Clean up
+    rm -rf "$tmpdir"
+fi
+
