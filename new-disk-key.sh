@@ -1,34 +1,19 @@
 #!/bin/sh
 
-TOOLSDIR="/opt/tpmdisk"
-DISK="/dev/disk/by-uuid/UUID_SDA3"
+export TPM2TOOLS_TCTI=device:/dev/tpmrm0
+export TPM2TOOLS_TCTI_NAME=device
+export TPM2TOOLS_DEVICE_FILE=/dev/tpmrm0
+DISK="/dev/disk/by-uuid/UUID_ROOT_PARTITION"
+TMPDIR=$(mktemp -d)
 TPM_SLOT="2"
-
-tmpdir=$(mktemp -d)
 umask 0077
 
-# Make a new key
-dd if=/dev/urandom bs=1 count=32 | base64 | tr -d '\n' > "$tmpdir/newkey.bin"
-
-# Seal the new key to the TPM
-echo "Sealing key to TPM..."
-"$TOOLSDIR/seal-to-pcrs.sh" "$tmpdir/newkey.bin" "/bk/sealedkey_priv.bin" "/bk/sealedkey_pub.bin"
-
+#Get the PCRs 0,2,4,9,11,12,14 as a binary file
+tpm2_pcrlist -Q -L sha1:0,2,4,9,11,12,14 -o "$TMPDIR/pcr.digest"
 if [ $? -ne 0 ]
 then
-    # Clean up
     rm -rf "$tmpdir"
     exit $?
-else
-    # Kill the existing key
-    echo "Removing old key..."
-    cryptsetup luksKillSlot "$DISK" "$TPM_SLOT" -d /keys/rootkey.bin
-
-    # Add the key to LUKS
-    echo "Adding key..."
-    cryptsetup luksAddKey "$DISK" -S "$TPM_SLOT" -d /keys/rootkey.bin "$tmpdir/newkey.bin"
-
-    # Clean up
-    rm -rf "$tmpdir"
 fi
 
+/opt/tpmdisk/renew-encryption.sh "$TMPDIR/pcr.digest"

@@ -1,9 +1,9 @@
 #!/bin/sh
 
-TOOLSDIR="/opt/tpmdisk"
+TPM2TOOLS_TCTI=device:/dev/tpmrm0
+TPM2TOOLS_TCTI_NAME=device
+TPM2TOOLS_DEVICE_FILE=/dev/tpmrm0
 MOUNTPOINT="$(mktemp -d /tmp/mnt.XXXXXXXX)"
-
-mount -t ext4 /dev/disk/by-uuid/UUID_KEYS_PARTITION "$MOUNTPOINT"
 
 try_default() {
     echo -n "DEFAULT_KEY" | cryptsetup luksOpen --test-passphrase /dev/disk/by-uuid/UUID_ROOT_PARTITION
@@ -39,22 +39,16 @@ cleanup() {
     rm -rf /tmp/*
 }
 
+disk_key=$(tpm2_unseal -Q -H 0x81010011 -L sha1:0,2,4,9,11,12,14)
 if [ $? -gt 0 ]
 then
     try_usb
 else
-    disk_key=$("$TOOLSDIR/unseal-from-pcrs.sh" "$MOUNTPOINT/sealedkey_priv.bin" "$MOUNTPOINT/sealedkey_pub.bin" /dev/stdout)
+    echo -n "$disk_key" | cryptsetup luksOpen --test-passphrase /dev/disk/by-uuid/UUID_ROOT_PARTITION
     if [ $? -gt 0 ]
     then
         try_usb
     else
-        echo -n "$disk_key" | cryptsetup luksOpen --test-passphrase /dev/disk/by-uuid/UUID_ROOT_PARTITION
-        if [ $? -gt 0 ]
-        then
-            try_usb
-        else
-            cleanup
-            echo -n "$disk_key"
-        fi
+        echo -n "$disk_key"
     fi
 fi
