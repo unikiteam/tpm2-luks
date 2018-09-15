@@ -39,7 +39,7 @@ cleanup() {
     rm -rf /tmp/*
 }
 
-disk_key=$(tpm2_unseal -Q -H 0x81010011 -L sha1:0,2,4,9,11,12,14)
+disk_key=$(tpm2_unseal -Q -H 0x81010011 -L sha256:0,2,4,9,11,12,14)
 if [ $? -gt 0 ]
 then
     try_usb

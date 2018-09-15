@@ -9,7 +9,7 @@ TPM_SLOT="2"
 umask 0077
 
 #Get the PCRs 0,2,4,9,11,12,14 as a binary file
-tpm2_pcrlist -Q -L sha1:0,2,4,9,11,12,14 -o "$TMPDIR/pcr.digest"
+tpm2_pcrlist -Q -L sha256:0,2,4,9,11,12,14 -o "$TMPDIR/pcr.digest"
 if [ $? -ne 0 ]
 then
     rm -rf "$tmpdir"

@@ -12,7 +12,7 @@ umask 0077
 dd if=/dev/urandom bs=1 count=32 | base64 | tr -d '\n' > "$TMPDIR/key"
 
 #Create Policy
-tpm2_createpolicy -Q -P -L sha1:0,2,4,9,11,12,14 -F "$PCR_FILE" -f "$TMPDIR/pcr.policy"
+tpm2_createpolicy -Q -P -L sha256:0,2,4,9,11,12,14 -F "$PCR_FILE" -f "$TMPDIR/pcr.policy"
 if [ $? -ne 0 ]
 then
     rm -rf "$tmpdir"
