@@ -12,7 +12,7 @@ umask 0077
 dd if=/dev/urandom bs=1 count=32 | base64 | tr -d '\n' > "$TMPDIR/key"
 
 #Create Policy
-tpm2_createpolicy -Q -P -L sha256:0,2,4,9,11,12,14 -F "$PCR_FILE" -f "$TMPDIR/pcr.policy"
+tpm2_createpolicy -Q -P -L sha1:0,2,4,9,11,12,14 -F "$PCR_FILE" -f "$TMPDIR/pcr.policy"
 if [ $? -ne 0 ]
 then
     rm -rf "$tmpdir"
@@ -20,7 +20,7 @@ then
 fi
 
 #Seal the key to the TPM and policy
-tpm2_create -Q -g sha256 -G keyedhash -H 0x81010009 -u "$TMPDIR/sealedkey.pub" -r "$TMPDIR/sealedkey.priv" -A "fixedtpm|fixedparent|sensitivedataorigin|noda|adminwithpolicy" -L "$TMPDIR/pcr.policy" -I "$TMPDIR/key"
+tpm2_create -Q -g sha1 -G keyedhash -H 0x81010009 -u "$TMPDIR/sealedkey.pub" -r "$TMPDIR/sealedkey.priv" -A "fixedtpm|fixedparent|sensitivedataorigin|noda|adminwithpolicy" -L "$TMPDIR/pcr.policy" -I "$TMPDIR/key"
 if [ $? -ne 0 ]
 then
     rm -rf "$tmpdir"
