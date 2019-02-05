@@ -20,7 +20,7 @@ then
 fi
 
 #Seal the key to the TPM and policy
-tpm2_create -Q -g sha1 -G keyedhash -H 0x81010009 -u "$TMPDIR/sealedkey.pub" -r "$TMPDIR/sealedkey.priv" -A "fixedtpm|fixedparent|sensitivedataorigin|noda|adminwithpolicy" -L "$TMPDIR/pcr.policy" -I "$TMPDIR/key"
+tpm2_create -Q -g sha256 -G keyedhash -H 0x81010009 -u "$TMPDIR/sealedkey.pub" -r "$TMPDIR/sealedkey.priv" -A "fixedtpm|fixedparent|sensitivedataorigin|noda|adminwithpolicy" -L "$TMPDIR/pcr.policy" -I "$TMPDIR/key"
 if [ $? -ne 0 ]
 then
     rm -rf "$tmpdir"
